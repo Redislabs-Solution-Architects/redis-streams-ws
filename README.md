@@ -2,6 +2,12 @@
 
 An example using redis streams and web sockets to serve up data
 
+## Run in Docker
+
+```docker-compose up```
+
+http://localhost:8080/
+
 ## Setup
 
 1) Run a redis docker container or redis server version 5.0 or later
@@ -12,3 +18,9 @@ An example using redis streams and web sockets to serve up data
 ```for i in {1..2000} ; do  redis-cli  xadd stream  "*"  tick update${i} ; done```
 
 
+## Building
+
+```
+docker build -t maguec/redis-streams-ws .
+docker push  maguec/redis-streams-ws 
+```

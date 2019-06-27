@@ -33,6 +33,7 @@ const (
 var (
 	addr      = flag.String("addr", ":8080", "http service address")
 	homeTempl = template.Must(template.New("").Parse(homeHTML))
+	dataTempl = template.Must(template.New("").Parse(dataHTML))
 	filename  string
 	upgrader  = websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -49,7 +50,7 @@ type XReadArgs struct {
 func readStream() ([]byte, time.Time, error) {
 	updates := []byte("")
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", "localhost", 6379),
+		Addr: fmt.Sprintf("%s:%d", "redis", 6379),
 	})
 	res, _ := client.XRead(&redis.XReadArgs{
 		Streams: []string{"stream", "0"},
@@ -146,10 +147,39 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	var v = struct{}{}
+	homeTempl.Execute(w, &v)
+}
+
+func loadData(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/fire", 302)
+}
+
+func setData(w http.ResponseWriter, r *http.Request) {
+	client := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%d", "redis", 6379),
+	})
+	for i := 0; i <= 2000; i += 1 {
+
+		_, err := client.XAdd(&redis.XAddArgs{
+			Stream: "stream",
+			ID:     "*",
+			Values: map[string]interface{}{"tick": i},
+		}).Result()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprintf(w, "<html><form action=\"/load\"><input type=\"submit\" value=\"Submit\"></form></html>")
+}
+
+func serveData(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -169,18 +199,22 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		string(p),
 		strconv.FormatInt(lastMod.UnixNano(), 16),
 	}
-	homeTempl.Execute(w, &v)
+	dataTempl.Execute(w, &v)
 }
 
 func main() {
+	//http.HandleFunc("/", serveHome)
 	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/data", serveData)
+	http.HandleFunc("/fire", setData)
+	http.HandleFunc("/load", loadData)
 	http.HandleFunc("/ws", serveWs)
 	if err := http.ListenAndServe(*addr, nil); err != nil {
 		log.Fatal(err)
 	}
 }
 
-const homeHTML = `<!DOCTYPE html>
+const dataHTML = `<!DOCTYPE html>
 <html lang="en">
     <head>
         <title>WebSocket Example</title>
@@ -202,5 +236,15 @@ const homeHTML = `<!DOCTYPE html>
             })();
         </script>
     </body>
+</html>
+`
+
+const homeHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<FRAMESET ROWS="80%,20%">
+    <FRAME SRC="/data" NAME="frm1" ID="frm1">
+    <FRAME SRC="/fire" NAME="frm1" ID="frm1">
+</FRAMESET>
 </html>
 `
