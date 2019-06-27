@@ -8,6 +8,13 @@ An example using redis streams and web sockets to serve up data
 
 http://localhost:8080/
 
+### Manually adding data to the stream
+
+In RDBTools add to the stream named "stream" JSON similar to 
+```
+{"tick": "manually added this"}
+```
+
 ## Setup
 
 1) Run a redis docker container or redis server version 5.0 or later
