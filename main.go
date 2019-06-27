@@ -59,8 +59,11 @@ func readStream() ([]byte, time.Time, error) {
 
 	for _, r := range res {
 		for _, j := range r.Messages {
-			updates = append(updates, "\n"...)
+			tick := fmt.Sprintf("%s", j.Values["tick"])
 			updates = append(updates, j.ID...)
+			updates = append(updates, " => "...)
+			updates = append(updates, tick...)
+			updates = append(updates, "\n"...)
 			client.XDel("stream", j.ID)
 		}
 	}

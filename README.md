@@ -9,5 +9,6 @@ An example using redis streams and web sockets to serve up data
 ```go run main.go```
 3) navigate to http://localhost:8080/
 4) throw a bunch of data in the stream
-```for i in {1..3000} ; do  redis-cli  xadd stream  "*" foo${i} bar; done```
+```for i in {1..2000} ; do  redis-cli  xadd stream  "*"  tick update${i} ; done```
+
 
