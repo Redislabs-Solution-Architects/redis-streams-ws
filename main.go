@@ -47,23 +47,23 @@ type XReadArgs struct {
 }
 
 func readStream() ([]byte, time.Time, error) {
-	updates := []byte("nothing")
+	updates := []byte("")
 	client := redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d", "localhost", 6379),
 	})
 	res, _ := client.XRead(&redis.XReadArgs{
 		Streams: []string{"stream", "0"},
-		Count:   10,
+		Count:   25,
 		Block:   300 * time.Millisecond,
 	}).Result()
 
 	for _, r := range res {
 		for _, j := range r.Messages {
+			updates = append(updates, "\n"...)
 			updates = append(updates, j.ID...)
 			client.XDel("stream", j.ID)
 		}
 	}
-	fmt.Println(updates)
 	return updates, time.Now(), nil
 }
 
