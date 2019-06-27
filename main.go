@@ -27,7 +27,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Poll file for changes with this period.
-	filePeriod = 500 * time.Millisecond
+	filePeriod = 100 * time.Millisecond
 )
 
 var (
@@ -54,7 +54,7 @@ func readStream() ([]byte, time.Time, error) {
 	res, _ := client.XRead(&redis.XReadArgs{
 		Streams: []string{"stream", "0"},
 		Count:   25,
-		Block:   300 * time.Millisecond,
+		Block:   100 * time.Millisecond,
 	}).Result()
 
 	for _, r := range res {
