@@ -67,6 +67,9 @@ func readStream() ([]byte, time.Time, error) {
 			client.XDel("stream", j.ID)
 		}
 	}
+	if len(updates) < 1 {
+		updates = []byte("waiting for updates...")
+	}
 	return updates, time.Now(), nil
 }
 
