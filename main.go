@@ -171,12 +171,13 @@ func setData(w http.ResponseWriter, r *http.Request) {
 			ID:     "*",
 			Values: map[string]interface{}{"tick": i},
 		}).Result()
+		time.Sleep(1 * time.Millisecond)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, "<html><form action=\"/load\"><input type=\"submit\" value=\"Submit\"></form></html>")
+	fmt.Fprintf(w, "<html><form action=\"/load\"><input type=\"submit\" value=\"Populate Stream\"></form></html>")
 }
 
 func serveData(w http.ResponseWriter, r *http.Request) {
