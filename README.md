@@ -12,7 +12,7 @@ http://localhost:8080/
 
 In RDBTools add to the stream named "stream" JSON similar to 
 ```
-{"tick": "manually added this"}
+{"ric": "NYSE:UBER", price: "22.01"}
 ```
 
 ## Setup
@@ -22,7 +22,7 @@ In RDBTools add to the stream named "stream" JSON similar to
 ```go run main.go```
 3) navigate to http://localhost:8080/
 4) throw a bunch of data in the stream
-```for i in {1..2000} ; do  redis-cli  xadd stream  "*"  tick update${i} ; done```
+```for i in {1..2000} ; do  redis-cli  xadd stream  "*"  ric NYSE:UBER price 22.01 ; done```
 
 
 ## Building
