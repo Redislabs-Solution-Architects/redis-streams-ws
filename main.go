@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -47,10 +48,22 @@ type XReadArgs struct {
 	Block   time.Duration
 }
 
+func getRedisConf() string {
+	redishost := "localhost"
+	redisport := "6379"
+	if len(os.Getenv("REDIS_HOST")) > 0 {
+		redishost = os.Getenv("REDIS_HOST")
+	}
+	if len(os.Getenv("REDIS_PORT")) > 0 {
+		redishost = os.Getenv("REDIS_PORT")
+	}
+	return (fmt.Sprintf("%s:%s", redishost, redisport))
+}
+
 func readStream() ([]byte, time.Time, error) {
 	updates := []byte("")
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", "redis", 6379),
+		Addr: getRedisConf(),
 	})
 	res, _ := client.XRead(&redis.XReadArgs{
 		Streams: []string{"stream", "0"},
@@ -162,7 +175,7 @@ func loadData(w http.ResponseWriter, r *http.Request) {
 
 func setData(w http.ResponseWriter, r *http.Request) {
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", "redis", 6379),
+		Addr: getRedisConf(),
 	})
 	for i := 0; i <= 2000; i += 1 {
 
