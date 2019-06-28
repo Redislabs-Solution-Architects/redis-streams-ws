@@ -231,7 +231,6 @@ const dataHTML = `<!DOCTYPE html>
                 }
                 conn.onmessage = function(evt) {
                     console.log('file updated');
-                    console.log(evt.data);
                     data.textContent = evt.data;
                 }
             })();
