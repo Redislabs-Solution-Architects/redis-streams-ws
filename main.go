@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/websocket"
 	"html/template"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -73,10 +74,13 @@ func readStream() ([]byte, time.Time, error) {
 
 	for _, r := range res {
 		for _, j := range r.Messages {
-			tick := fmt.Sprintf("%s", j.Values["tick"])
+			ric := fmt.Sprintf("%s", j.Values["ric"])
+			price := fmt.Sprintf("%s", j.Values["price"])
 			updates = append(updates, j.ID...)
 			updates = append(updates, " => "...)
-			updates = append(updates, tick...)
+			updates = append(updates, ric...)
+			updates = append(updates, " : "...)
+			updates = append(updates, price...)
 			updates = append(updates, "\n"...)
 			client.XDel("stream", j.ID)
 		}
@@ -178,11 +182,25 @@ func setData(w http.ResponseWriter, r *http.Request) {
 		Addr: getRedisConf(),
 	})
 	for i := 0; i <= 2000; i += 1 {
-
+		rics := make([]string, 0)
+		rics = append(rics,
+			"NASDAQ:AAPL",
+			"NASDAQ:MSFT",
+			"NASDAQ:GOOG",
+			"NASDAQ:AVGO",
+			"NYSE:TUFN",
+			"NYSE:CHS",
+			"NYSE:UBER",
+			"NYSE:AT",
+			"NYSE:ACB",
+		)
 		_, err := client.XAdd(&redis.XAddArgs{
 			Stream: "stream",
 			ID:     "*",
-			Values: map[string]interface{}{"tick": i},
+			Values: map[string]interface{}{
+				"ric":   rics[rand.Intn(len(rics))],
+				"price": fmt.Sprintf("%.2f", rand.Float64()*100),
+			},
 		}).Result()
 		time.Sleep(1 * time.Millisecond)
 		if err != nil {
