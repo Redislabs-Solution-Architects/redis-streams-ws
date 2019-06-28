@@ -12,7 +12,7 @@ http://localhost:8080/
 
 In RDBTools add to the stream named "stream" JSON similar to 
 ```
-{"ric": "NYSE:UBER", price: "22.01"}
+{"ric": "NYSE:UBER", "price": "22.01"}
 ```
 
 ## Setup
